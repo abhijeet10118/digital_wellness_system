@@ -1,0 +1,571 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard - Smart Health Monitor</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="{% static 'monitor/images/logo_nightmode.png' %}">
+
+    <style>
+        :root {
+            --bg-main: #e7ddb4;
+            --bg-card: #ffffff;
+            --text-main: #1f2937;
+            --text-sub: #6b7280;
+            --accent: #f59e0b;
+            --nav-gradient: linear-gradient(90deg, #f97316, #f59e0b);
+            --success: #16a34a;
+            --warning: #eab308;
+            --danger: #dc2626;
+        }
+
+        body.dark {
+            --bg-main: #020617;
+            --bg-card: rgba(15, 23, 42, 0.85);
+            --text-main: #e2e8f0;
+            --text-sub: #94a3b8;
+            --accent: #38bdf8;
+            --nav-gradient: linear-gradient(90deg, #020617, #0f172a);
+            background-image: url("{% static 'monitor/images/darkmodebg.jpeg' %}");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            height: 100%;
+        }
+
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background: var(--bg-main);
+            background-image: url("{% static 'monitor/images/lightmodebg1.jpeg' %}");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            color: var(--text-main);
+            transition: all 0.4s ease;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: var(--nav-gradient);
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo {
+            margin-right: 10px;
+        }
+
+        .logo-light {
+            display: block;
+        }
+
+        body.dark .logo-light {
+            display: none;
+        }
+
+        .logo-dark {
+            display: none;
+        }
+
+        body.dark .logo-dark {
+            display: block;
+        }
+
+        .nav-title {
+            font-size: 1.5em;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: white;
+            font-family: 'Quicksand', sans-serif;
+            cursor: pointer;
+            transition: opacity 0.3s ease;
+        }
+
+        .nav-title:hover {
+            opacity: 0.8;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 22px;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: white;
+            font-weight: 600;
+            padding: 8px 14px;
+            border-radius: 8px;
+        }
+
+        .nav-links a:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .zen-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: white;
+            font-size: 0.85em;
+            cursor: pointer;
+        }
+
+        .zen-track {
+            width: 40px;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            position: relative;
+        }
+
+        .zen-knob {
+            width: 16px;
+            height: 16px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.3s;
+        }
+
+        body.dark .zen-knob {
+            transform: translateX(20px);
+        }
+
+        .main {
+            flex: 1;
+            padding: 30px 20px;
+        }
+
+        .dashboard-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .dashboard-header h1 {
+            font-size: 2.5em;
+            color: var(--text-main);
+            margin-bottom: 10px;
+        }
+
+        .dashboard-header p {
+            color: var(--text-sub);
+            font-size: 1.1em;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            max-width: 1400px;
+            margin: 0 auto 40px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+        }
+
+        .stat-card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .stat-icon {
+            font-size: 2.5em;
+        }
+
+        .stat-card-title {
+            font-size: 0.9em;
+            color: var(--text-sub);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .stat-value {
+            font-size: 2.8em;
+            font-weight: 800;
+            color: var(--text-main);
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            font-size: 0.85em;
+            color: var(--text-sub);
+        }
+
+        .stat-trend {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            font-size: 0.9em;
+        }
+
+        body.dark .stat-trend {
+            border-top-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .trend-up {
+            color: var(--success);
+        }
+
+        .trend-down {
+            color: var(--danger);
+        }
+
+        .charts-section {
+            max-width: 1400px;
+            margin: 0 auto 40px;
+        }
+
+        .chart-container {
+            background: var(--bg-card);
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            backdrop-filter: blur(10px);
+            margin-bottom: 20px;
+        }
+
+        .chart-title {
+            font-size: 1.3em;
+            color: var(--text-main);
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+
+        .health-insights {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: var(--bg-card);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            backdrop-filter: blur(10px);
+        }
+
+        .insights-title {
+            font-size: 1.5em;
+            color: var(--text-main);
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+
+        .insight-item {
+            padding: 15px;
+            margin-bottom: 12px;
+            border-left: 4px solid var(--accent);
+            background: rgba(0, 0, 0, 0.02);
+            border-radius: 8px;
+        }
+
+        body.dark .insight-item {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .insight-item.success {
+            border-left-color: var(--success);
+        }
+
+        .insight-item.warning {
+            border-left-color: var(--warning);
+        }
+
+        .insight-item.danger {
+            border-left-color: var(--danger);
+        }
+
+        footer {
+            margin-top: auto;
+            background: var(--bg-card);
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85em;
+            color: var(--text-sub);
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        footer .footer-left {
+            flex: 0.8;
+            text-align: left;
+        }
+
+        footer .footer-center {
+            flex: 2.5;
+            text-align: center;
+        }
+
+        footer .footer-right {
+            flex: 1.5;
+            text-align: right;
+        }
+
+        footer strong {
+            color: var(--text-main);
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .dashboard-header h1 {
+                font-size: 2em;
+            }
+
+            footer {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            footer .footer-left,
+            footer .footer-center,
+            footer .footer-right {
+                flex: 1;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- NAVBAR -->
+    <div class="navbar">
+        <div class="nav-left">
+            <img src="{% static 'monitor/images/logo_lightmode.png' %}" class="logo logo-light" height="40px" width="46px" style="background: linear-gradient(90deg, #f97316, #f59e0b); border-radius: 5px;">
+            <img src="{% static 'monitor/images/logo_nightmode.png' %}" class="logo logo-dark" height="40px" width="46px" style="background: linear-gradient(90deg, #f97316, #f59e0b); border-radius: 5px;">
+            <div class="nav-title" onclick="window.location.href='{% url 'home_page' %}'">Smart Health Monitor</div>
+        </div>
+
+        <div class="nav-links">
+            <a href="{% url 'home_page' %}">Home</a>
+            <a href="{% url 'dashboard_page' %}">Dashboard</a>
+            <a href="{% url 'weekday_page' %}">Weekday Mode</a>
+            <a href="{% url 'weekend_page' %}">Weekend Mode</a>
+            <a href="{% url 'combined_history' %}">History</a>
+
+            <div class="zen-toggle" onclick="toggleTheme()">
+                <span>Focus</span>
+                <div class="zen-track">
+                    <div class="zen-knob"></div>
+                </div>
+                <span>Relax</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main">
+        <div class="dashboard-header">
+            <h1>📊 Health Dashboard</h1>
+            <p>Your comprehensive health and wellness overview</p>
+        </div>
+
+        <!-- STATISTICS GRID -->
+        <div class="stats-grid">
+            <!-- Total Sessions -->
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <span class="stat-icon">📅</span>
+                    <div>
+                        <div class="stat-card-title">Total Sessions</div>
+                    </div>
+                </div>
+                <div class="stat-value">{{ stats.total_sessions }}</div>
+                <div class="stat-label">Weekday + Yoga Sessions</div>
+            </div>
+
+            <!-- Total Time -->
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <span class="stat-icon">⏱️</span>
+                    <div>
+                        <div class="stat-card-title">Total Active Time</div>
+                    </div>
+                </div>
+                <div class="stat-value">{{ stats.total_hours|floatformat:1 }}h</div>
+                <div class="stat-label">Combined session time</div>
+            </div>
+
+            <!-- Weekday Sessions -->
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <span class="stat-icon">💼</span>
+                    <div>
+                        <div class="stat-card-title">Weekday Sessions</div>
+                    </div>
+                </div>
+                <div class="stat-value">{{ stats.weekday.total_sessions }}</div>
+                <div class="stat-label">{{ stats.weekday.total_hours|floatformat:1 }} hours monitored</div>
+            </div>
+
+            <!-- Average Blink Rate -->
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <span class="stat-icon">👁️</span>
+                    <div>
+                        <div class="stat-card-title">Avg Blink Rate</div>
+                    </div>
+                </div>
+                <div class="stat-value">{{ stats.weekday.avg_blinks_per_session|floatformat:0 }}</div>
+                <div class="stat-label">Blinks per session</div>
+                {% if stats.weekday.avg_blinks_per_session < 50 %}
+                <div class="stat-trend trend-down">⚠️ Below recommended</div>
+                {% else %}
+                <div class="stat-trend trend-up">✓ Healthy range</div>
+                {% endif %}
+            </div>
+
+            <!-- Posture Quality -->
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <span class="stat-icon">🧍</span>
+                    <div>
+                        <div class="stat-card-title">Posture Quality</div>
+                    </div>
+                </div>
+                <div class="stat-value">{{ stats.weekday.posture_quality|floatformat:0 }}%</div>
+                <div class="stat-label">Good posture time</div>
+                {% if stats.weekday.posture_quality >= 80 %}
+                <div class="stat-trend trend-up">✓ Excellent</div>
+                {% elif stats.weekday.posture_quality >= 60 %}
+                <div class="stat-trend">⚠️ Good, can improve</div>
+                {% else %}
+                <div class="stat-trend trend-down">⚠️ Needs attention</div>
+                {% endif %}
+            </div>
+
+            <!-- Yoga Sessions -->
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <span class="stat-icon">🧘</span>
+                    <div>
+                        <div class="stat-card-title">Yoga Sessions</div>
+                    </div>
+                </div>
+                <div class="stat-value">{{ stats.yoga.total_sessions }}</div>
+                <div class="stat-label">{{ stats.yoga.total_hours|floatformat:1 }} hours practice</div>
+            </div>
+
+            <!-- This Week Activity -->
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <span class="stat-icon">📈</span>
+                    <div>
+                        <div class="stat-card-title">This Week</div>
+                    </div>
+                </div>
+                <div class="stat-value">{{ stats.this_week.sessions }}</div>
+                <div class="stat-label">{{ stats.this_week.hours|floatformat:1 }} hours active</div>
+            </div>
+
+            <!-- Average Session Length -->
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <span class="stat-icon">⏰</span>
+                    <div>
+                        <div class="stat-card-title">Avg Session</div>
+                    </div>
+                </div>
+                <div class="stat-value">{{ stats.avg_session_minutes|floatformat:0 }}</div>
+                <div class="stat-label">Minutes per session</div>
+            </div>
+        </div>
+
+        <!-- HEALTH INSIGHTS -->
+        <div class="health-insights">
+            <h2 class="insights-title">💡 Health Insights & Recommendations</h2>
+            
+            {% if insights %}
+                {% for insight in insights %}
+                <div class="insight-item {{ insight.type }}">
+                    <strong>{{ insight.icon }} {{ insight.title }}</strong><br>
+                    {{ insight.message }}
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="insight-item">
+                    <strong>🎯 Getting Started</strong><br>
+                    Start tracking your sessions to receive personalized health insights!
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="footer-left">
+            <p><strong>© 2025 Smart Health Monitor</strong></p>
+        </div>
+        <div class="footer-center">
+            <p><strong>Support:</strong> support@shm.com</p>
+        </div>
+        <div class="footer-right">
+            <p><strong>Team:</strong> Abhay Pratap | Abhijeet | Adyasha Biswal | Ritabrata Karmakar | Aryan Bakhda | Soma Vashista</p>
+        </div>
+    </footer>
+
+    <script>
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('smartHealthTheme');
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark');
+            }
+        }
+
+        function toggleTheme() {
+            document.body.classList.toggle("dark");
+            if (document.body.classList.contains('dark')) {
+                localStorage.setItem('smartHealthTheme', 'dark');
+            } else {
+                localStorage.setItem('smartHealthTheme', 'light');
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', loadTheme);
+    </script>
+</body>
+</html>

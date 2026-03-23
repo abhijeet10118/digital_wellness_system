@@ -1,0 +1,208 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Exam Session History</title>
+    <link rel="icon" type="image/png" href="{% static 'monitor/images/logo.png' %}">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        h2 {
+            text-align: center;
+            color: white;
+            font-size: 2.2em;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .table-container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            background: white;
+        }
+        
+        th {
+            background: #dc2626;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-size: 1.1em;
+        }
+        
+        td {
+            padding: 12px;
+            text-align: center;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 1em;
+        }
+        
+        tr:hover {
+            background: #f1f5f9;
+        }
+        
+        button {
+            padding: 12px 30px;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            background: white;
+            color: #1e293b;
+            font-size: 1.1em;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        
+        .no-data {
+            text-align: center;
+            padding: 60px 40px;
+            color: #64748b;
+            font-style: italic;
+            font-size: 1.2em;
+        }
+        
+        .button-container {
+            text-align: center;
+            margin-top: 30px;
+        }
+        
+        .stats-summary {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+        }
+        
+        .stat-box {
+            text-align: center;
+            padding: 15px;
+            min-width: 150px;
+        }
+        
+        .stat-box h4 {
+            color: #64748b;
+            margin-bottom: 5px;
+            font-size: 0.9em;
+            text-transform: uppercase;
+        }
+        
+        .stat-box p {
+            color: #1e293b;
+            font-size: 1.8em;
+            font-weight: bold;
+            margin: 0;
+        }
+        
+        .good-stat {
+            color: #16a34a !important;
+        }
+        
+        .warning-stat {
+            color: #eab308 !important;
+        }
+        
+        .bad-stat {
+            color: #dc2626 !important;
+        }
+    </style>
+</head>
+<body>
+    <h2>📝 Exam Session History</h2>
+
+    {% if sessions %}
+    <div class="table-container">
+        <div class="stats-summary">
+            <div class="stat-box">
+                <h4>Total Sessions</h4>
+                <p>{{ sessions.count }}</p>
+            </div>
+            <div class="stat-box">
+                <h4>Total Alerts</h4>
+                <p class="bad-stat">
+                    {% for s in sessions %}
+                        {% if forloop.first %}
+                            {{ s.alert_count }}
+                        {% endif %}
+                    {% endfor %}
+                </p>
+            </div>
+            <div class="stat-box">
+                <h4>Avg Violations</h4>
+                <p class="warning-stat">
+                    {% widthratio sessions.0.violation_percentage 1 1 %}%
+                </p>
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Duration</th>
+                    <th>Eyes Away</th>
+                    <th>Multiple Person</th>
+                    <th>Alerts</th>
+                    <th>Violation %</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in sessions %}
+                <tr>
+                    <td>{{ s.date|date:"M d, Y - g:i A" }}</td>
+                    <td>{{ s.duration }} sec<br><small>({{ s.duration_minutes }} min)</small></td>
+                    <td>{{ s.eyes_away_time }} sec<br><small>({{ s.eyes_away_minutes }} min)</small></td>
+                    <td>{{ s.multiple_person_time }} sec<br><small>({{ s.multiple_person_minutes }} min)</small></td>
+                    <td style="font-weight: bold; color: {% if s.alert_count == 0 %}#16a34a{% elif s.alert_count < 5 %}#eab308{% else %}#dc2626{% endif %};">
+                        {{ s.alert_count }}
+                    </td>
+                    <td>
+                        <span style="color: {% if s.violation_percentage < 10 %}#16a34a{% elif s.violation_percentage < 25 %}#eab308{% else %}#dc2626{% endif %}; font-weight: bold;">
+                            {{ s.violation_percentage }}%
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="table-container">
+        <div class="no-data">
+            <p>📭 No exam sessions recorded yet.</p>
+            <p>Start your first proctored exam to track violations!</p>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="button-container">
+        <a href="{% url 'exam_page' %}">
+            <button>🔙 Back to Exam Mode</button>
+        </a>
+        <a href="{% url 'home_page' %}">
+            <button style="background: #dc2626; color: white;">🏠 Home</button>
+        </a>
+    </div>
+</body>
+</html>
